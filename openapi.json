@@ -1,0 +1,114 @@
+{
+    "openapi": "3.0.1",
+    "info" :{
+        "title": "Simulate of Pajak",
+        "description": "Calculate about PPH21 by Salary",
+        "version": "1.0.0"
+     },
+     "servers": [
+        {
+          "url": "http://localhost:3306/"
+        }
+      ],
+      "tags": [
+        {
+          "name": "log",
+          "description": "This group represent history calculate"
+        }
+      ],
+      "paths": {
+        "/log": {
+          "post": {
+            "tags": [
+              "log"
+            ],
+            "summary": "create new request",
+            "requestBody": {
+              "description": "Created request object",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "required": [
+                      "gajipokok",
+                      "tunjangan"
+                    ],
+                    "properties": {
+                      "gajipokok": {
+                        "type": "string"
+                      },
+                      "tunjangan": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "required": true
+            },
+            "responses": {
+              "201": {
+                "description": "successful operation",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "totalgross": {
+                          "type": "string"
+                        },
+                        "jht": {
+                          "type": "string"
+                        },
+                        "jp": {
+                          "type": "string"
+                        },
+                        "biayajabatan": {
+                          "type": "string"
+                        },
+                        "totalnet": {
+                          "type": "string"
+                        },
+                        "gajisetahun": {
+                          "type": "string"
+                        },
+                        "totalSetahun": {
+                          "type": "string"
+                        },
+                        "pphpertahun": {
+                          "type": "string"
+                        },
+                        "pphperbulan": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "400": {
+                "description": "invalid input",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "description": "error message"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "security": [
+              {
+                "BearerAuth": []
+              }
+            ]
+          }
+        }
+    }
+}
