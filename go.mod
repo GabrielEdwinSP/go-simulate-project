@@ -1,4 +1,4 @@
-module github.com/GabrielEdwinSP/go-simutale-pajak.git
+module github.com/GabrielEdwinSP/go-simulate-project.git
 
 go 1.17
 

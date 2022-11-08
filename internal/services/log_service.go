@@ -3,7 +3,7 @@ package services
 import (
 	"net/http"
 
-	"github.com/GabrielEdwinSP/go-simutale-pajak.git/internal/domain"
+	"github.com/GabrielEdwinSP/go-simulate-project.git/internal/domain"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
