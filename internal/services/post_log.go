@@ -4,34 +4,26 @@ import (
 	"net/http"
 
 	"github.com/GabrielEdwinSP/go-simulate-project.git/internal/database"
+	"github.com/GabrielEdwinSP/go-simulate-project.git/internal/dto"
 	"github.com/gin-gonic/gin"
 )
 
-type Request struct {
-	GajiPokok float32 `json:"gajipokok"`
-	Tunjangan float32 `json:"tunjangan"`
-}
-
-type Response struct {
-	TotalGross   float32 `json:"totalgross"`
-	JHT          float32 `json:"jht"`
-	JP           float32 `json:"jp"`
-	BiayaJabatan float32 `json:"biayajabatan"`
-	TotalNet     float32 `json:"totalnet"`
-	GajiSetahun  float32 `json:"gajisetahun"`
-	TotalSetahun float32 `json:"totalSetahun"`
-	PPHperTahun  float32 `json:"pphpertahun"`
-	PPHperbulan  float32 `json:"pphperbulan"`
-}
-
-func TotalSementara(gaji float32, tunjangan float32) (total_sementara float32, jht float32, jp float32, jabatan float32, totalnet float32) {
-
-	total_sementara = gaji + tunjangan
-	jht = gaji * 0.02
-	jp = gaji * 0.01
-	jabatan = total_sementara * 0.05939
-	totalnet = total_sementara - (jht + jp + jabatan)
-	return total_sementara, jht, jp, jabatan, totalnet
+func TotalSementara(gaji float32, tunjangan float32) *dto.CalculateStruct {
+	var calculate dto.CalculateStruct
+	calculate = dto.CalculateStruct{
+		Total_sementara: gaji + tunjangan,
+		JHT:             gaji * 0.02,
+		JP:              gaji * 0.01,
+		Jabatan:         calculate.Total_sementara * 0.05939,
+		Totalnet:        calculate.Total_sementara - (calculate.JHT + calculate.JP + calculate.Jabatan),
+	}
+	// total_sementara =
+	// jht = gaji * 0.02
+	// jp = gaji * 0.01
+	// jabatan = total_sementara * 0.05939
+	// totalnet = total_sementara - (jht + jp + jabatan)
+	// return total_sementara, jht, jp, jabatan, totalnet
+	return &calculate
 }
 
 func TotalSetahun(totalnet float32) (setahun float32) {
@@ -56,8 +48,7 @@ func PphPerTahun(totalsetahun float32) (pphsetahun float32, pphperbulan float32)
 }
 
 func PostLogService(c *gin.Context) {
-	var request Request
-	var response Response
+	var request dto.Request
 
 	c.Bind((&request))
 
@@ -67,24 +58,42 @@ func PostLogService(c *gin.Context) {
 		return
 	}
 
+	calculate := dto.CalculateStruct{}
 	//Calculate
-	total_sementara, jht2, jp1, jabatan, totalnets := TotalSementara(request.GajiPokok, request.Tunjangan)
-	setahun := TotalSetahun(totalnets)
+	calculate = *TotalSementara(request.GajiPokok, request.Tunjangan)
+	setahun := TotalSetahun(calculate.Totalnet)
 	totalsetahun := setahun - 54000000
 	pphsetahun, pphbulanan := PphPerTahun(totalsetahun)
 
-	response.TotalGross = total_sementara
-	response.JHT = jht2
-	response.JP = jp1
-	response.BiayaJabatan = jabatan
-	response.TotalNet = totalnets
-	response.GajiSetahun = setahun
-	response.TotalSetahun = totalsetahun
-	response.PPHperTahun = pphsetahun
-	response.PPHperbulan = pphbulanan
+	response := dto.Response{
+		TotalGross:   calculate.Total_sementara,
+		JHT:          calculate.Total_sementara,
+		JP:           calculate.JP,
+		BiayaJabatan: calculate.Jabatan,
+		TotalNet:     calculate.Totalnet,
+		GajiSetahun:  setahun,
+		TotalSetahun: totalsetahun,
+		PPHperTahun:  pphsetahun,
+		PPHperbulan:  pphbulanan,
+	}
+	// response.TotalGross = calculate.Total_sementara
+	// response.JHT = calculate.JHT
+	// response.JP = calculate.JP
+	// response.BiayaJabatan = calculate.Jabatan
+	// response.TotalNet = calculate.Totalnet
+	// response.GajiSetahun = setahun
+	// response.TotalSetahun = totalsetahun
+	// response.PPHperTahun = pphsetahun
+	// response.PPHperbulan = pphbulanan
 
 	c.JSON(http.StatusOK, gin.H{
 		"data": response,
 	})
+
+	resultResponse := database.DB.Create(&response)
+	if resultResponse.Error != nil {
+		c.Status(400)
+		return
+	}
 
 }
